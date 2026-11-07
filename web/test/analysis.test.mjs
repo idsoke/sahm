@@ -467,8 +467,8 @@ test("screener presets, return windows and 52-week range like analysis::screen",
   assert.ok(an.RETURN_FIELDS.has("return_1y_pct") && !an.RETURN_FIELDS.has("range_52w_pct"));
   assert.equal(an.keyName("ytd"), "retytd");
   assert.equal(an.keyName("PBV"), "pb");
-  assert.equal(an.KEY_NAMES.split(", ").length, 27);
-  // Same table as ScreenPreset (src/analysis/screen.rs).
+  assert.equal(an.KEY_NAMES.split(", ").length, 28);
+  // Same table as ScreenPreset (src/analysis/screen.rs), plus the web-only syariah preset.
   assert.deepEqual(an.PRESETS, {
     "top-performers": { filter: "", sort: "ret1y", descending: true },
     "worst-performers": { filter: "", sort: "ret1y", descending: false },
@@ -478,6 +478,7 @@ test("screener presets, return windows and 52-week range like analysis::screen",
     "52w-low": { filter: "range<=5", sort: "range", descending: false },
     "high-volume": { filter: "", sort: "volume", descending: true },
     "large-cap": { filter: "", sort: "mcap", descending: true },
+    syariah: { filter: "syariah=ya", sort: "mcap", descending: true },
   });
   for (const p of Object.values(an.PRESETS)) { an.parseFilters(p.filter); assert.ok(an.sortField(p.sort)); }
   assert.equal(an.parsePreset(" 52W_HIGH "), "52w-high");

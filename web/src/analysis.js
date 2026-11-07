@@ -532,11 +532,14 @@ const KEYS = {
   roe: "roe_pct", roa: "roa_pct", margin: "net_margin_pct", npm: "net_margin_pct", opmargin: "operating_margin_pct", opm: "operating_margin_pct",
   de: "debt_to_equity", der: "debt_to_equity", debt: "debt_to_equity", growth: "revenue_growth_pct", revgrowth: "revenue_growth_pct",
   epsgrowth: "earnings_growth_pct", peg: "peg", ps: "price_to_sales", "p/s": "price_to_sales", sector: "sector", industry: "industry",
+  syariah: "syariah", sharia: "syariah", shariah: "syariah", des: "syariah",
 };
 export const FUNDAMENTAL_FIELDS = new Set(["roe_pct","roa_pct","net_margin_pct","operating_margin_pct","debt_to_equity","revenue_growth_pct","earnings_growth_pct","peg","price_to_sales","sector","industry"]);
 // The return windows: joined from MSN's whole-market list (one request).
 export const RETURN_FIELDS = new Set(["return_1w_pct","return_1m_pct","return_3m_pct","return_6m_pct","return_ytd_pct","return_1y_pct"]);
-export const KEY_NAMES = "pe, fpe, pb, ps, peg, mcap, price, div, eps, volume, chg, range, ret1w, ret1m, ret3m, ret6m, retytd, ret1y, roe, roa, margin, opmargin, de, growth, epsgrowth, sector, industry";
+export const KEY_NAMES = "pe, fpe, pb, ps, peg, mcap, price, div, eps, volume, chg, range, ret1w, ret1m, ret3m, ret6m, retytd, ret1y, roe, roa, margin, opmargin, de, growth, epsgrowth, sector, industry, syariah";
+// Yes/no words a syariah filter takes (syariah=ya, syariah!=ya, syariah=tidak).
+const YES = new Set(["ya", "yes", "y", "true", "1"]), NO = new Set(["tidak", "no", "n", "false", "0", "bukan"]);
 
 // idx's ready-made screens, the same table as analysis::screen::ScreenPreset.
 export const PRESETS = {
@@ -548,6 +551,8 @@ export const PRESETS = {
   "52w-low": { filter: "range<=5", sort: "range", descending: false },
   "high-volume": { filter: "", sort: "volume", descending: true },
   "large-cap": { filter: "", sort: "mcap", descending: true },
+  // In OJK's Daftar Efek Syariah, largest first.
+  syariah: { filter: "syariah=ya", sort: "mcap", descending: true },
 };
 export const PRESET_NAMES = Object.keys(PRESETS).join(", ");
 /** Preset name (case and _ forgiven) to its canonical name, or a usage error. */
@@ -579,7 +584,12 @@ export function parseFilters(spec) {
     const field = KEYS[key];
     if (!field) throw new UsageError(`unknown filter key "${key}"; use one of ${KEY_NAMES}`);
     const textKey = field === "sector" || field === "industry";
-    if (textKey) {
+    if (field === "syariah") {
+      if (op !== "=" && op !== "!=") throw new UsageError(`${key} only supports = and !=`);
+      const w = valS.replace(/^"|"$/g, "").toLowerCase();
+      if (!YES.has(w) && !NO.has(w)) throw new UsageError(`filter "${clause}": use ${key}=ya or ${key}=tidak`);
+      out.push({ key, field, op, bool: (op === "=") === YES.has(w), raw: clause });
+    } else if (textKey) {
       if (op !== "=" && op !== "!=") throw new UsageError(`${key} only supports = and !=`);
       out.push({ key, field, op, text: valS.replace(/^"|"$/g, ""), raw: clause });
     } else {
@@ -590,7 +600,7 @@ export function parseFilters(spec) {
   }
   return out;
 }
-export function sortField(name) { return KEYS[String(name || "mcap").toLowerCase()] || null; }
+export function sortField(name) { const f = KEYS[String(name || "mcap").toLowerCase()]; return f && f !== "syariah" ? f : null; }
 const NAME_BY_FIELD = Object.fromEntries(KEY_NAMES.split(", ").map((k) => [KEYS[k], k]));
 /** Canonical key name, as the CLI reports it (`ytd` -> `retytd`, `pbv` -> `pb`). */
 export function keyName(name) { const k = String(name).toLowerCase(); return NAME_BY_FIELD[KEYS[k]] || k; }
@@ -598,6 +608,7 @@ export function matches(row, filters) {
   return filters.every((f) => {
     const v = row[f.field];
     if (v == null) return false;
+    if (f.bool != null) return v === f.bool;
     if (f.text != null) {
       const hit = String(v).toLowerCase().includes(f.text.toLowerCase());
       return f.op === "!=" ? !hit : hit;
