@@ -31,3 +31,9 @@ npm-mcp/bin/*.tmp
 /web/public/docs/
 /web/public/llms.txt
 /web/public/llms-full.txt
+
+# Local Worker secrets and dependencies (web/)
+.dev.vars
+web/node_modules/
+# Raw OJK decree PDFs: the source of data/syariah.csv, kept out of git
+data/raw/
