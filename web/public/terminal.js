@@ -29,7 +29,7 @@ const COMMANDS = [
   { name: "risk", usage: "risk <SYMBOL>", help: "risk lens: negative equity, leverage, liquidity, losses, and beta, volatility and largest fall against IHSG" },
   { name: "technical", usage: "technical <SYMBOL> [period]", help: "RSI, MACD, averages, levels, signal" },
   { name: "compare", usage: "compare <SYMBOLS>", help: "side-by-side fundamentals" },
-  { name: "screen", usage: "screen [FILTER] [--preset P] [--sort KEY] [--asc|--desc] [--returns] [--limit N]", help: "e.g. screen pe<10,div>5,mcap>5T --sort div; --returns adds the return windows when no filter or sort needs them; presets: top-performers, worst-performers, high-dividend, low-pe, 52w-high, 52w-low, high-volume, large-cap; keys include range (52-week position, 0 to 100) and ret1w ret1m ret3m ret6m retytd ret1y (price return %, as MSN reports it)" },
+  { name: "screen", usage: "screen [FILTER] [--preset P] [--sort KEY] [--asc|--desc] [--returns] [--limit N]", help: "e.g. screen pe<10,div>5,mcap>5T --sort div; --returns adds the return windows when no filter or sort needs them; presets: top-performers, worst-performers, high-dividend, low-pe, 52w-high, 52w-low, high-volume, large-cap, syariah; syariah=ya keeps OJK's Daftar Efek Syariah; keys include range (52-week position, 0 to 100) and ret1w ret1m ret3m ret6m retytd ret1y (price return %, as MSN reports it)" },
   { name: "news", usage: "news [SYMBOL] [--limit N] [--company-only]", help: "headlines; with a symbol the company's first, then market context" },
   { name: "dividends", usage: "dividends <SYMBOL>", help: "payments, yearly totals, TTM yield, streak, splits" },
   { name: "returns", usage: "returns <SYMBOLS> [--benchmark ^JKSE|none]", help: "1w..5y returns, CAGR, volatility, drawdown, excess over IHSG" },
@@ -43,6 +43,7 @@ const COMMANDS = [
   { name: "market", usage: "market", help: "IHSG, breadth, gainers, losers, most traded" },
   { name: "holidays", usage: "holidays [YEAR] [--all] [--upcoming]", help: "IDX trading holidays, the year's trading days, whether today is a trading day and the next one" },
   { name: "astro", usage: "astro [DATE] [--days N] [--natal launch|base|none] [--backtest] [--period 1y|2y|5y|10y]", help: "IHSG astrology: planets, Moon phase, Mercury retrograde, weton and shio for a date (16:00 WIB), upcoming phases and ingresses, transits to IHSG's chart; --backtest tests them on IHSG's daily returns (5y by default). Traditional astrology, not a forecast" },
+  { name: "syariah", usage: "syariah [SYMBOLS] [--sector TEXT] [--search TEXT]", help: "OJK's Daftar Efek Syariah: with symbols, whether each is listed; without, the list by sector (e.g. syariah --sector energi); screen syariah=ya filters the screener on it" },
   { name: "list", usage: "list [--search TEXT]", help: "listed stocks: codes and names (bundled; the CLI adds boards, listing dates and shares from idx.co.id)" },
   { name: "members", usage: "members [--search TEXT]", help: "exchange members: the broker codes broker and bandar report, with names" },
   { name: "tools", usage: "tools [idx_TOOL]", help: "the MCP tools with their CLI and web commands; tools idx_quote runs one" },
@@ -67,7 +68,7 @@ const HELP_ID = {
   risk: "lensa risiko: ekuitas negatif, utang, likuiditas, kerugian, serta beta, volatilitas dan penurunan terdalam dibanding IHSG",
   technical: "RSI, MACD, rata-rata bergerak, level, sinyal",
   compare: "fundamental beberapa saham berdampingan",
-  screen: "misalnya screen pe<10,div>5,mcap>5T --sort div; --returns menambah kolom imbal hasil bila tidak ada filter atau urutan yang memerlukannya; preset: top-performers, worst-performers, high-dividend, low-pe, 52w-high, 52w-low, high-volume, large-cap; kuncinya antara lain range (posisi dalam rentang 52 minggu, 0 sampai 100) dan ret1w ret1m ret3m ret6m retytd ret1y (imbal hasil harga %, menurut MSN)",
+  screen: "misalnya screen pe<10,div>5,mcap>5T --sort div; --returns menambah kolom imbal hasil bila tidak ada filter atau urutan yang memerlukannya; preset: top-performers, worst-performers, high-dividend, low-pe, 52w-high, 52w-low, high-volume, large-cap, syariah; syariah=ya hanya menyisakan saham di Daftar Efek Syariah OJK; kuncinya antara lain range (posisi dalam rentang 52 minggu, 0 sampai 100) dan ret1w ret1m ret3m ret6m retytd ret1y (imbal hasil harga %, menurut MSN)",
   news: "judul berita; dengan kode saham, berita perusahaan lebih dulu, lalu konteks pasar",
   dividends: "pembayaran, total per tahun, imbal hasil TTM, tahun berturut-turut, pemecahan saham",
   returns: "imbal hasil 1w..5y, CAGR, volatilitas, penurunan terdalam, selisih terhadap IHSG",
@@ -81,6 +82,7 @@ const HELP_ID = {
   market: "IHSG, jumlah saham naik dan turun, saham naik, saham turun, saham teramai",
   holidays: "hari libur bursa, jumlah hari perdagangan setahun, apakah hari ini hari perdagangan dan kapan yang berikutnya",
   astro: "astrologi IHSG: planet, fase Bulan, Merkurius retrograde, weton dan shio untuk satu tanggal (16.00 WIB), fase dan ingres mendatang, transit ke peta IHSG; --backtest mengujinya pada imbal hasil harian IHSG (5y bila tanpa pilihan). Astrologi tradisional, bukan ramalan",
+  syariah: "Daftar Efek Syariah OJK: dengan kode saham, apakah tiap saham tercantum; tanpa kode, daftarnya per sektor (misalnya syariah --sector energi); screen syariah=ya menyaring screener dengannya",
   list: "saham tercatat: kode dan nama (bawaan; CLI menambah papan, tanggal pencatatan dan jumlah saham dari idx.co.id)",
   members: "anggota bursa: kode broker yang dipakai broker dan bandar, dengan namanya",
   tools: "alat MCP dengan perintah CLI dan web-nya; tools idx_quote menjalankan satu alat",
@@ -90,6 +92,9 @@ const HELP_ID = {
   clear: "bersihkan lembar hasil",
 };
 const helpOf = (c) => (ID && HELP_ID[c.name]) || c.help;
+
+/** A DES flag as text, so it never rests on colour: listed, not listed, or not covered. */
+const desMark = (v) => (v === true ? "✓ DES" : v === false ? "not in DES" : "—");
 
 /** Errors the terminal raises itself: a usage slip, worded for the page. */
 const usageError = (message) => Object.assign(new Error(message), { code: "usage" });
@@ -202,6 +207,7 @@ const R = {
       { h: "Name", k: "name", l: true, cls: "name" }, { h: "Open", f: (r) => fmt.price(r.open) },
       { h: "High", f: (r) => fmt.price(r.day_high) }, { h: "Low", f: (r) => fmt.price(r.day_low) }, { h: "Volume", f: (r) => fmt.int(r.volume) },
       { h: "Mkt Cap", f: (r) => fmt.compact(r.market_cap) }, { h: "P/E", f: (r) => fmt.ratio(r.pe_trailing) }, { h: "Div %", f: (r) => pct(r.dividend_yield_pct) },
+      { h: "Syariah", f: (r) => desMark(r.syariah), l: true },
     ], d)));
     const behind = d.filter((r) => r.behind_session === true).map((r) => (r.market_time ? `${r.symbol} (last trade ${r.market_time.slice(0, 10)})` : r.symbol));
     if (behind.length) frag.append(el("p", { class: "warn", text: `Behind the latest IDX session: ${behind.join(", ")} · suspended, not traded since, or the source lags` }));
@@ -392,6 +398,7 @@ const R = {
       { h: "Symbol", k: "symbol", l: true, cls: "sym" }, { h: "Name", k: "name", l: true, cls: "name" }, { h: "Price", f: (r) => fmt.price(r.price) },
       { h: "Chg %", f: (r) => fmt.pct(r.change_pct), cls: (r) => `num ${signClass(r.change_pct)}` }, { h: "Mkt Cap", f: (r) => fmt.compact(r.market_cap) },
       { h: "P/E", f: (r) => fmt.ratio(r.pe_trailing) }, { h: "P/B", f: (r) => fmt.ratio(r.price_to_book) }, { h: "Div %", f: (r) => pct(r.dividend_yield_pct) },
+      { h: "Syariah", f: (r) => desMark(r.syariah), l: true },
     ];
     if (s.returns_source) cols.push({ h: win[0], f: (r) => fmt.pct(r[win[1]]), cls: (r) => `num ${signClass(r[win[1]])}` });
     if (withRange) cols.push({ h: "52w pos", f: (r) => fmt.num(r.range_52w_pct, 1) });
@@ -400,6 +407,7 @@ const R = {
     if (s.rows.length < s.total_matches) frag.append(el("p", { class: "warn", text: `Showing ${s.rows.length} of ${s.total_matches}; add --limit 0 for all.` }));
     if (s.returns_source) frag.append(el("p", { class: "warn", text: `Return windows: price return % as reported by ${s.returns_source}.` }));
     if (withRange) frag.append(el("p", { class: "warn", text: "52w pos: where the price sits in its 52-week range, 0 at the low, 100 at the high." }));
+    if (s.syariah_list) frag.append(el("p", { class: "warn", text: `Syariah: OJK's Daftar Efek Syariah ${s.syariah_list.period}, ${s.syariah_list.decree}, effective ${s.syariah_list.effective}.` }));
     return frag;
   },
   insights(r, all) {
@@ -653,6 +661,26 @@ const R = {
     frag.append(el("p", { class: "warn", text: "Amount: IDR per share (the dividend, or a rights issue's exercise price). Ratio: old:new. Source: IPOT; json actions … carries each announcement and RUPS agenda." }));
     return frag;
   },
+  syariah(d) {
+    const frag = document.createDocumentFragment();
+    frag.append(el("p", { class: "prose", text: `OJK Daftar Efek Syariah ${d.period} · ${d.decree} · effective ${d.effective}` }));
+    if (d.checks) {
+      frag.append(wrapScroll(table([
+        { h: "Symbol", k: "symbol", l: true, cls: "sym" }, { h: "Syariah", f: (c) => desMark(c.syariah), l: true },
+        { h: "Name", f: (c) => c.name || NA, l: true, cls: "name" }, { h: "DES sector", f: (c) => c.sector || NA, l: true },
+      ], d.checks)));
+      frag.append(el("p", { class: "warn", text: "Not in DES: OJK did not list the stock as sharia-compliant in this decree. A dash: an index, warrant or foreign code the DES does not cover." }));
+      return frag;
+    }
+    const shown = d.stocks.slice(0, 200);
+    frag.append(el("p", { class: "prose", text: `${d.total} of ${d.count} stocks${d.sector ? ` · sector "${d.sector}"` : ""}${d.search ? ` · matching "${d.search}"` : ""}` }));
+    if (shown.length) frag.append(wrapScroll(table([
+      { h: "Symbol", k: "code", l: true, cls: "sym" }, { h: "Name", k: "name", l: true, cls: "name" }, { h: "DES sector", k: "sector", l: true },
+    ], shown)));
+    if (d.total > shown.length) frag.append(el("p", { class: "warn", text: `Showing the first ${shown.length}; narrow with --sector or --search, or use json syariah for all.` }));
+    if (!d.sector) frag.append(el("p", { class: "warn", text: `Sectors: ${d.sectors.join(", ")}.` }));
+    return frag;
+  },
   instruments(l) {
     const frag = document.createDocumentFragment();
     const shown = l.instruments.slice(0, 200);
@@ -700,7 +728,7 @@ const R = {
     const frag = document.createDocumentFragment();
     frag.append(el("p", { class: "prose", html: `<b>${t.tool}</b> · ${t.what}` }));
     frag.append(el("pre", { text: `${t.cli}\n${t.cli.replace(/^idx /, "idx -o json ")}` }));
-    frag.append(el("p", { class: "warn", text: `${cliOnlyReason(t)} Install: npm install -g ihsg-cli, or the binaries on GitHub (fzn0x/idx).` }));
+    frag.append(el("p", { class: "warn", text: `${cliOnlyReason(t)} It runs in the idx CLI Sahm is built on: npm install -g ihsg-cli, or the binaries on GitHub (fzn0x/idx).` }));
     return frag;
   },
   holidays(h) {
@@ -985,6 +1013,12 @@ async function run(line) {
       break;
     }
     case "market": env = await api("market"); await calendar; render = R.market; break;
+    case "syariah": {
+      const syms = pos.join(",");
+      env = await api(`syariah?${qs({ symbols: syms || null, sector: opt.sector, search: opt.search })}`);
+      render = R.syariah;
+      break;
+    }
     case "list": env = await api(`instruments?${qs({ search: opt.search || pos.join(" ") || null })}`); render = R.instruments; break;
     case "members": env = await api(`members?${qs({ search: opt.search || pos.join(" ") || null })}`); render = R.members; break;
     case "tools": {
@@ -1047,7 +1081,7 @@ function entry(cmdLine) {
   const n = ++seq;
   const sec = el("section", { class: "panel result", id: `r${n}`, tabindex: "-1", "aria-labelledby": `r${n}-h` });
   const meta = el("p", { class: "meta", text: t("berjalan", "running") });
-  const cap = el("header", { class: "ph" }, [el("h2", { id: `r${n}-h` }, [el("span", { class: "no", text: String(n).padStart(2, "0") }), `idx ${cmdLine}`]), meta]);
+  const cap = el("header", { class: "ph" }, [el("h2", { id: `r${n}-h` }, [el("span", { class: "no", text: String(n).padStart(2, "0") }), `sahm ${cmdLine}`]), meta]);
   const body = el("div", { class: "body" });
   const mline = el("p", { class: "mline" });
   sec.append(cap, body, mline);
@@ -1269,7 +1303,7 @@ const RAIL = {
   foreign: "foreign flow", astro: "IHSG astrology",
   screen: "filter the market", news: "headlines", dividends: "payments, yield", returns: "returns vs IHSG",
   brief: "one-page summary", sentiment: "headline mood", broker: "top brokers", bandar: "bandarmology",
-  actions: "corporate actions", market: "IHSG and movers", holidays: "trading holidays", list: "listed stocks",
+  actions: "corporate actions", market: "IHSG and movers", holidays: "trading holidays", syariah: "sharia list (DES)", list: "listed stocks",
   members: "broker codes", tools: "MCP tools", ownership: "KSEI holders", json: "raw JSON envelope",
   help: "every command", clear: "clear the sheet",
 };
@@ -1280,7 +1314,7 @@ const RAIL_ID = {
   foreign: "aliran asing", astro: "astrologi IHSG",
   screen: "saring pasar", news: "berita", dividends: "dividen, imbal hasil", returns: "imbal hasil vs IHSG",
   brief: "ringkasan saham", sentiment: "suasana berita", broker: "broker teratas", bandar: "bandarmologi",
-  actions: "aksi korporasi", market: "IHSG dan penggerak", holidays: "libur bursa", list: "saham tercatat",
+  actions: "aksi korporasi", market: "IHSG dan penggerak", holidays: "libur bursa", syariah: "saham syariah (DES)", list: "saham tercatat",
   members: "kode broker", tools: "alat MCP", ownership: "pemegang KSEI", json: "amplop JSON mentah",
   help: "semua perintah", clear: "bersihkan lembar",
 };

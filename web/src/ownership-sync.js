@@ -29,7 +29,7 @@ const FETCH_TIMEOUT_MS = 30_000;
 const SCHEMA = "idx.ownership.mirror.v1";
 const CHECK_EVERY_SECS = 30 * 60;
 const WRITES_PER_ROW = 3;
-const UA = "idx-web (+https://ihsg.midoriresearch.com)";
+const UA = "sahm-web (+https://sahm.sahm-web.workers.dev)";
 
 export const mirrorBase = (env) => (env.OWN_MIRROR_URL || DEFAULT_MIRROR).replace(/\/+$/, "");
 const keepReleases = (env) => Math.max(2, Number(env.OWN_KEEP_RELEASES || 6));

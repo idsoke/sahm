@@ -1,4 +1,4 @@
-// idx web: Cloudflare Worker for ihsg.midoriresearch.com.
+// Sahm web: Cloudflare Worker for sahm.sahm-web.workers.dev (built on idx's web terminal).
 //
 // - Serves the landing page and the web terminal from `public/` (the assets
 //   layer answers those without running the Worker; `public/_headers` gives

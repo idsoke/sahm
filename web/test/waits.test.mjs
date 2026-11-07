@@ -13,7 +13,7 @@ const web = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (...p) => readFileSync(join(web, ...p), "utf8");
 
 // Answered in the browser or from bundled data: nothing to wait on.
-const LOCAL = new Set(["help", "clear", "json", "tools", "holidays", "list", "members"]);
+const LOCAL = new Set(["help", "clear", "json", "tools", "holidays", "list", "members", "syariah"]);
 
 test("every network command says what it waits on", () => {
   const names = [...read("public", "terminal.js").matchAll(/\{ name: "([a-z]+)", usage:/g)].map((m) => m[1]);

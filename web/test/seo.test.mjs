@@ -10,7 +10,7 @@ import { PAGES as DOCS, htmlPath } from "../scripts/docs.mjs";
 
 const pub = join(dirname(fileURLToPath(import.meta.url)), "..", "public");
 const read = (p) => readFileSync(join(pub, p), "utf8");
-const ORIGIN = "https://ihsg.midoriresearch.com";
+const ORIGIN = "https://sahm.sahm-web.workers.dev";
 // Each page in Bahasa Indonesia at its plain path and in English under /en/.
 const PAGES = {
   "index.html": `${ORIGIN}/`, "en/index.html": `${ORIGIN}/en/`,
@@ -67,11 +67,11 @@ test("every page names its language, and each language pair links both ways", ()
   }
 });
 
-test("titles name the publisher and stay within what search results show", () => {
+test("titles name the site and stay within what search results show", () => {
   for (const page of Object.keys(PAGES)) {
     const title = read(page).match(/<title>([^<]+)<\/title>/)?.[1];
     assert.ok(title, `${page} title`);
-    assert.match(title, /Midori Research$/, `${page} title ends with the publisher`);
+    assert.match(title, /\| Sahm$/, `${page} title ends with the site name`);
     assert.ok(title.length <= 70, `${page} title is ${title.length} characters`);
     const d = meta(read(page), "description");
     assert.ok(d.length >= 70 && d.length <= 170, `${page} description is ${d.length} characters`);

@@ -57,7 +57,7 @@ test("GitHub is asked once an hour, with a User-Agent and no token", async () =>
     assert.match(first.fetched_at, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
     assert.deepEqual(first.data, { repo: "fzn0x/idx", url: "https://github.com/fzn0x/idx", stars: 172, forks: 23 });
 
-    const again = await route(env, new URL("https://ihsg.midoriresearch.com/api/repo"));
+    const again = await route(env, new URL("https://sahm.sahm-web.workers.dev/api/repo"));
     assert.equal(again.cached, true);
     assert.deepEqual(again.data, first.data);
   });

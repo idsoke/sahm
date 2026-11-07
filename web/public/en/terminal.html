@@ -3,33 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Indonesian Stock Terminal | idx by Midori Research</title>
-<meta name="description" content="An Indonesian stock terminal in the browser: type quote BBCA, fundamental TLKM or screen pe&lt;10 and get the same answers as the idx CLI. Free, no account.">
-<link rel="canonical" href="https://ihsg.midoriresearch.com/en/terminal">
-<link rel="alternate" hreflang="id" href="https://ihsg.midoriresearch.com/terminal">
-<link rel="alternate" hreflang="en" href="https://ihsg.midoriresearch.com/en/terminal">
-<link rel="alternate" hreflang="x-default" href="https://ihsg.midoriresearch.com/terminal">
+<title>Sharia Stock Terminal | Sahm</title>
+<meta name="description" content="A sharia stock terminal in the browser: type syariah BRIS, screen --preset syariah or quote TLKM for OJK's DES status, prices and ratios. Free, no account.">
+<link rel="canonical" href="https://sahm.sahm-web.workers.dev/en/terminal">
+<link rel="alternate" hreflang="id" href="https://sahm.sahm-web.workers.dev/terminal">
+<link rel="alternate" hreflang="en" href="https://sahm.sahm-web.workers.dev/en/terminal">
+<link rel="alternate" hreflang="x-default" href="https://sahm.sahm-web.workers.dev/terminal">
 <meta name="robots" content="index,follow,max-image-preview:large">
-<meta name="theme-color" content="#123a64" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#173d66" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#047857" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f766e" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="idx by Midori Research">
+<meta property="og:site_name" content="Sahm">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="id_ID">
-<meta property="og:title" content="Indonesian stock terminal in the browser">
-<meta property="og:description" content="Type quote BBCA, fundamental TLKM or screen pe&lt;10 and get the same answers as the idx CLI, from a board refreshed every minute. No install, no account.">
-<meta property="og:url" content="https://ihsg.midoriresearch.com/en/terminal">
-<meta property="og:image" content="https://ihsg.midoriresearch.com/og.png">
+<meta property="og:title" content="Sharia stock terminal in the browser">
+<meta property="og:description" content="Type syariah BRIS, screen --preset syariah or quote TLKM: OJK's Daftar Efek Syariah status, prices and ratios, from a board refreshed every minute. No install, no account.">
+<meta property="og:url" content="https://sahm.sahm-web.workers.dev/en/terminal">
+<meta property="og:image" content="https://sahm.sahm-web.workers.dev/og.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="idx by Midori Research: IHSG and Indonesian stock prices today, free and without an account.">
+<meta property="og:image:alt" content="Sahm: Indonesian sharia stocks today by OJK's Daftar Efek Syariah, free and without an account.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/mark.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700;800&family=Libre+Franklin:wght@800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="/styles.css">
 <script type="module" src="/terminal.js"></script>
 </head>
@@ -37,15 +37,14 @@
 <a class="skip" href="#cmd">Skip to the command line</a>
 <header class="masthead">
   <div class="wrap">
-    <a class="brand" href="/en/" aria-label="idx home"><img src="/mark.svg" alt="" width="36" height="36"><span class="brand-name"><b>idx</b><small>by Midori Research</small></span></a>
+    <a class="brand" href="/en/" aria-label="Sahm home"><img src="/mark.svg" alt="" width="36" height="36"><span class="brand-name"><b>Sahm</b><small>Indonesian sharia stocks</small></span></a>
     <nav class="nav" aria-label="Site">
       <a href="/en/">Market</a>
       <a href="/en/terminal" aria-current="page">Terminal</a>
-      <a href="/docs/" hreflang="en">Docs</a>
+      <a href="/en/terminal?cmd=syariah">Sharia list</a>
     </nav>
     <div class="mast-end">
       <p class="lang" role="group" aria-label="Language"><a href="/terminal" hreflang="id" lang="id" aria-label="Bahasa Indonesia">ID</a><span aria-current="true">EN</span></p>
-      <a class="star" id="star" href="https://github.com/fzn0x/idx" aria-label="Star fzn0x/idx on GitHub"><span class="star-l"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.6L9.7 6.25 14.66 6.44 10.76 9.5 12.11 14.26 8 11.5 3.89 14.26 5.24 9.5 1.34 6.44 6.3 6.25Z"/></svg><span class="star-w">Star</span></span><span class="star-n" id="star-n" hidden></span></a>
     </div>
   </div>
 </header>
@@ -69,11 +68,11 @@
 <main class="term wrap" id="main">
   <div class="out" id="out" aria-live="polite" aria-label="Command output, newest first">
     <section class="panel result welcome" id="welcome" tabindex="-1" aria-labelledby="welcome-h">
-      <header class="ph"><h2 id="welcome-h"><span class="no">00</span>idx help</h2><p class="meta">type a command above, or pick one</p></header>
+      <header class="ph"><h2 id="welcome-h"><span class="no">00</span>sahm help</h2><p class="meta">type a command above, or pick one</p></header>
       <div class="pbody">
-        <p class="prose">Same commands as the idx CLI, same fields. Quotes come from a board refreshed every minute in exchange hours; everything else is fetched on demand and cached. Each result prints as a numbered panel under the command line, newest first. A bare ticker such as <b>BBCA</b> runs quote.</p>
+        <p class="prose">Type <b>syariah BRIS,BBCA</b> to check OJK's Daftar Efek Syariah, or <b>screen --preset syariah</b> to screen sharia stocks. Same commands as the idx CLI Sahm is built on, same fields. Quotes come from a board refreshed every minute in exchange hours; everything else is fetched on demand and cached. Each result prints as a numbered panel under the command line, newest first. A bare ticker such as <b>BBCA</b> runs quote.</p>
         <div class="hints" id="hints"></div>
-        <noscript><p class="err">The terminal needs JavaScript. The CLI does not: <code>curl -fsSL https://raw.githubusercontent.com/fzn0x/idx/main/install.sh | sh</code></p></noscript>
+        <noscript><p class="err">The terminal needs JavaScript. The official Daftar Efek Syariah is on <a href="https://ojk.go.id/id/kanal/syariah/data-dan-statistik/daftar-efek-syariah/default.aspx">OJK's site</a>.</p></noscript>
       </div>
       <p class="mline"><span class="sr-only">Answered in the browser, no request.</span><span aria-hidden="true">LOCAL&lt;&lt;HELP&lt;&lt;IDX&lt;WEB&lt;TERMINAL</span></p>
     </section>
@@ -94,7 +93,7 @@
 <div class="statusbar" id="statusbar">
   <span class="st-state" id="st-state" data-state="idle">Connecting</span>
   <span class="st-age" id="st-age"></span>
-  <span class="st-src">Board from Yahoo Finance via idx · other commands fetched on demand and cached</span>
+  <span class="st-src">Board from Yahoo Finance via Sahm · other commands fetched on demand and cached</span>
   <span class="st-right">
     <button class="st-btn" id="keys-open" type="button">Keys</button>
     <span class="st-keys"><kbd>/</kbd> command <kbd>J</kbd><kbd>K</kbd> results <kbd>?</kbd> keys</span>

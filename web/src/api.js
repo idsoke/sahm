@@ -16,6 +16,7 @@ import * as msnScreen from "./msn-screen.js";
 import { fetchWithin, redactUrls } from "./net.js";
 import { scanRows, scanStatus } from "./bandar-scan.js";
 import { syncStatus } from "./ownership-sync.js";
+import * as des from "./syariah.js";
 import UNIVERSE from "./universe.json" with { type: "json" };
 import BROKERS from "./brokers.json" with { type: "json" };
 
@@ -165,9 +166,15 @@ export function boardFreshness(ts, now = new Date()) {
 
 // ---- endpoints ---------------------------------------------------------
 
-export async function market(env, now = new Date()) {
+/**
+ * IHSG, breadth and the movers. With `syariah`, breadth, gainers, losers, the
+ * most traded and the heavyweights count only the stocks in OJK's Daftar Efek
+ * Syariah; the index stays IHSG, and `universe` is the DES stocks on the board.
+ */
+export async function market(env, now = new Date(), { syariah = false } = {}) {
   const b = await board(env);
-  const quotes = b.value.quotes.filter((q) => q.price != null && q.change_pct != null);
+  const onBoard = syariah ? b.value.quotes.filter((q) => des.isSyariah(q.symbol)) : b.value.quotes;
+  const quotes = onBoard.filter((q) => q.price != null && q.change_pct != null);
   const byChg = [...quotes].sort((a, c) => c.change_pct - a.change_pct);
   const liquid = quotes.filter((q) => (q.volume || 0) > 0 && (q.market_cap || 0) > 1e12);
   const liquidByChg = [...liquid].sort((a, c) => c.change_pct - a.change_pct);
@@ -194,7 +201,8 @@ export async function market(env, now = new Date()) {
     losers: liquidByChg.slice(-10).reverse().map(trim),
     most_active: byValue.slice(0, 10).map(trim),
     heavyweights: [...quotes].sort((a, c) => (c.market_cap || 0) - (a.market_cap || 0)).slice(0, 16).map(trim),
-    universe: SYMBOLS.length,
+    universe: syariah ? onBoard.length : SYMBOLS.length,
+    syariah_list: syariah ? { decree: des.META.decree, period: des.META.period, effective: des.META.effective, count: des.META.count } : null,
   };
   const fresh = boardFreshness(b.value.ts, now);
   return envelope("idx.market.v1", data, { fetched_at: b.value.ts, cached: true, stale: fresh.stale, warnings: [...fresh.warnings, ...(b.value.warnings || [])] });
@@ -205,7 +213,7 @@ export async function quote(env, symbolsRaw, now = new Date()) {
   const b = await board(env);
   // behind_session is set on copies, never on the board's own rows.
   const latest = hol.latestSession(now);
-  const flag = (q) => ({ ...q, behind_session: hol.behindSession(q, latest) });
+  const flag = (q) => ({ ...q, syariah: des.isSyariah(q.symbol), behind_session: hol.behindSession(q, latest) });
   const bySym = new Map(b.value.quotes.map((q) => [q.symbol, q]));
   const found = symbols.map((s) => bySym.get(s)).filter(Boolean);
   const warnings = symbols.filter((s) => !bySym.has(s)).map((s) => `no data for ${s}`);
@@ -556,7 +564,7 @@ export async function screen(env, filterSpec, sort = null, limit = 25, maxFundam
   descending ??= pr ? pr.descending : true;
   const b = await board(env);
   let rows = b.value.quotes.map((q) => ({
-    symbol: q.symbol, name: q.name || NAME_BY_SYMBOL.get(q.symbol) || null, price: q.price, change_pct: q.change_pct, market_cap: q.market_cap,
+    symbol: q.symbol, name: q.name || NAME_BY_SYMBOL.get(q.symbol) || null, syariah: des.isSyariah(q.symbol), price: q.price, change_pct: q.change_pct, market_cap: q.market_cap,
     pe_trailing: q.pe_trailing, pe_forward: q.pe_forward, price_to_book: q.price_to_book, dividend_yield_pct: q.dividend_yield_pct,
     eps_ttm: q.eps_ttm, avg_volume_3m: q.avg_volume_3m, week52_high: q.week52_high, week52_low: q.week52_low,
     range_52w_pct: an.rangePosition(q.price, q.week52_low, q.week52_high),
@@ -620,6 +628,7 @@ export async function screen(env, filterSpec, sort = null, limit = 25, maxFundam
   const data = {
     preset, filters: filters.map((f) => f.raw), sort: an.keyName(sortName), descending, universe: SYMBOLS.length, quoted, matched_quote_level: matchedQuote,
     fundamentals_checked: checked, fundamentals_capped: capped, returns_source: returnsSource, total_matches: total, rows,
+    syariah_list: filters.some((f) => f.field === "syariah") ? { decree: des.META.decree, period: des.META.period, effective: des.META.effective } : null,
   };
   const fresh = boardFreshness(b.value.ts, now);
   return envelope("idx.screen.v1", data, { cached: cachedAll, stale: fresh.stale || staleAny || staleFund > 0, fetched_at: fetchedAt, warnings: [...fresh.warnings, ...warnings] });
@@ -1474,7 +1483,7 @@ export async function brief(env, symbolRaw) {
 export const REPO = "fzn0x/idx";
 export const REPO_TTL_SECS = 3600;
 const REPO_RETRY_SECS = 600;
-export const GITHUB_UA = "idx-web (+https://ihsg.midoriresearch.com)";
+export const GITHUB_UA = "sahm-web (+https://sahm.sahm-web.workers.dev)";
 
 /** The fields the Star button shows, from GET https://api.github.com/repos/{owner}/{repo}. */
 export function parseRepo(body) {
@@ -1495,6 +1504,27 @@ export async function repo(env) {
   return envelope("idx.repo.v1", r.value, { provider: "github", cached: r.cached, stale: r.stale, fetched_at: r.fetched_at, warnings: r.warning ? [r.warning] : [] });
 }
 
+// ---- syariah -----------------------------------------------------------
+
+/**
+ * OJK's Daftar Efek Syariah. With symbols: whether each one is listed (null for
+ * a code the DES does not speak to, such as an index). Without: the list,
+ * narrowed by sector and by a part of the code or name.
+ */
+export function syariah(symbolsRaw = null, sector = null, search = null) {
+  const meta = { ...des.META };
+  if (symbolsRaw) {
+    const checks = parseSymbols(symbolsRaw).map((symbol) => {
+      const e = des.entry(symbol);
+      return { symbol, syariah: des.isSyariah(symbol), name: e?.name ?? NAME_BY_SYMBOL.get(symbol) ?? null, sector: e?.sector ?? null };
+    });
+    return envelope("idx.syariah.check.v1", { ...meta, checks }, { provider: "ojk", cached: true });
+  }
+  const stocks = des.list(sector, search);
+  const warnings = sector && !stocks.length ? [`no DES sector matches "${sector}"; sectors: ${des.SECTORS.join(", ")}`] : [];
+  return envelope("idx.syariah.v1", { ...meta, sector: sector || null, search: search || null, sectors: des.SECTORS, total: stocks.length, stocks }, { provider: "ojk", cached: true, warnings });
+}
+
 // ---- router ----------------------------------------------------------
 
 const num = (v, d) => { if (v == null || v === "") return d; const n = Number(v); if (!Number.isFinite(n)) throw usage(`"${v}" is not a number`); return n; };
@@ -1503,7 +1533,7 @@ export async function route(env, url) {
   const p = url.pathname.replace(/^\/api/, "");
   const q = url.searchParams;
   switch (p) {
-    case "/market": return market(env);
+    case "/market": return market(env, new Date(), { syariah: q.get("syariah") === "1" || q.get("syariah") === "true" });
     case "/quote": return quote(env, q.get("symbols") || q.get("symbol"));
     case "/history": return history(env, q.get("symbol"), q.get("period") || "1y", q.get("interval") || "1d", num(q.get("limit"), 0));
     case "/intraday": return intraday(env, q.get("symbol"), q.get("interval") || "1m", num(q.get("limit"), 0));
@@ -1546,6 +1576,7 @@ export async function route(env, url) {
     case "/ownership/concentration": return ownershipConcentration(env, q.get("symbols"), q.get("by") || "hhi", q.get("asc") === "1" || q.get("asc") === "true", num(q.get("limit"), 25), q.get("as_of"));
     case "/ownership/graph": return ownershipGraph(env, q.get("root"), num(q.get("depth"), 2), num(q.get("min_pct"), 0), num(q.get("max_nodes"), 100), q.get("holder") === "1" || q.get("holder") === "true", q.get("as_of"));
     case "/ownership/status": return envelope("idx.ownership.sync.v1", await syncStatus(env), { provider: "github-mirror", cached: true });
+    case "/syariah": return syariah(q.get("symbols") || q.get("symbol"), q.get("sector"), q.get("search"));
     case "/universe": return envelope("idx.universe.v1", UNIVERSE.map(([symbol, name]) => ({ symbol, name })), { provider: "bundled", cached: true });
     case "/repo": return repo(env);
     default: throw notFound(`no such endpoint ${p}`);

@@ -1,4 +1,4 @@
-// Builds the documentation of ihsg.midoriresearch.com from the repository's
+// Builds the documentation of sahm.sahm-web.workers.dev from the repository's
 // README.md and docs/*.md, so the site never says something the repository
 // does not:
 //
@@ -24,7 +24,7 @@ import { dirname, join, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dropHtmlBlocks, escapeHtml, inlineText, render, slugger } from "./md.mjs";
 
-export const ORIGIN = "https://ihsg.midoriresearch.com";
+export const ORIGIN = "https://sahm.sahm-web.workers.dev";
 export const REPO = "https://github.com/fzn0x/idx";
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -211,10 +211,10 @@ export function pageHtml(page, root = ROOT) {
 <link rel="canonical" href="${canonical}">
 <link rel="alternate" type="text/markdown" href="${mdPath(page.slug)}" title="${escapeHtml(title)} as Markdown">
 <meta name="robots" content="index,follow,max-image-preview:large">
-<meta name="theme-color" content="#123a64" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#173d66" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#047857" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f766e" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="idx by Midori Research">
+<meta property="og:site_name" content="Sahm">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="${escapeHtml(full)}">
 <meta property="og:description" content="${desc}">
@@ -223,20 +223,20 @@ export function pageHtml(page, root = ROOT) {
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="idx by Midori Research: IHSG and Indonesian stock prices today, free and without an account.">
+<meta property="og:image:alt" content="Sahm: Indonesian sharia stocks today by OJK's Daftar Efek Syariah, free and without an account.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/mark.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700;800&family=Libre+Franklin:wght@800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="/docs.css">
 </head>
 <body class="docs-page">
 <a class="skip" href="#doc">Skip to the page</a>
 <header class="masthead">
   <div class="wrap">
-    <a class="brand" href="/en/" aria-label="idx home"><img src="/mark.svg" alt="" width="36" height="36"><span class="brand-name"><b>idx</b><small>by Midori Research</small></span></a>
+    <a class="brand" href="/en/" aria-label="Sahm home"><img src="/mark.svg" alt="" width="36" height="36"><span class="brand-name"><b>Sahm</b><small>Indonesian sharia stocks</small></span></a>
     <nav class="nav" aria-label="Site">
       <a href="/en/">Market</a>
       <a href="/en/terminal">Terminal</a>
@@ -260,9 +260,9 @@ ${body}
 </div>
 <footer class="sign">
   <div class="wrap">
-    <p class="place">Jakarta. Midori Research · MIT licence · <a href="mailto:desk@midoriresearch.com">desk@midoriresearch.com</a></p>
+    <p class="place">Jakarta. Sahm · <a href="/license.txt">Licence</a></p>
     <p class="links"><a href="/en/">Market page</a> <a href="/en/terminal">Web terminal</a> <a href="/" hreflang="id" lang="id">Halaman pasar (Bahasa Indonesia)</a> <a href="${REPO}">Source on GitHub</a> <a href="${REPO}/blob/main/CHANGELOG.md">Changelog</a></p>
-    <p class="disc">These pages are generated from the repository's README.md and docs/ and follow its main branch. idx is research tooling, not investment advice, and is not affiliated with PT Bursa Efek Indonesia (IDX), KSEI, Yahoo, Microsoft or Stockbit.</p>
+    <p class="disc">These pages document idx, the open-source toolkit Sahm is built on, and are generated from its README.md and docs/. The CLI, MCP server and JSON contract they describe are idx's; Sahm adds the sharia list and screener on top. idx and Sahm are research tooling, not investment advice, and is not affiliated with PT Bursa Efek Indonesia (IDX), KSEI, Yahoo, Microsoft or Stockbit.</p>
   </div>
 </footer>
 </body>

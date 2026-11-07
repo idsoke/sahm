@@ -4,5 +4,5 @@ User-agent: *
 Allow: /api/market
 Disallow: /api/
 
-# The documentation as Markdown for language models: https://ihsg.midoriresearch.com/llms.txt
-Sitemap: https://ihsg.midoriresearch.com/sitemap.xml
+# The documentation as Markdown for language models: https://sahm.sahm-web.workers.dev/llms.txt
+Sitemap: https://sahm.sahm-web.workers.dev/sitemap.xml

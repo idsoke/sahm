@@ -11,7 +11,7 @@ import worker from "../src/worker.js";
 import { SECURITY_HEADERS } from "../src/headers.js";
 
 const web = join(dirname(fileURLToPath(import.meta.url)), "..");
-const HOST = "ihsg.midoriresearch.com";
+const HOST = "sahm.sahm-web.workers.dev";
 
 // The assets binding: answers every path with `status`, as the asset layer
 // would (static files carry no charset).

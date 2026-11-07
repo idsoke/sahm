@@ -1,4 +1,4 @@
-// The security headers every response from ihsg.midoriresearch.com carries.
+// The security headers every response from sahm.sahm-web.workers.dev carries.
 //
 // Two places apply them: the Worker sets them on what it answers itself
 // (`/api/*`, `/healthz` and the routes wrangler.toml sends through it first),

@@ -44,7 +44,7 @@ test("md: lists, continuation lines, blockquotes, links, bare URLs", () => {
   assert.equal(render("- a\n\n  more\n- b"), "<ul><li><p>a</p>\n<p>more</p></li><li>b</li></ul>");
   assert.equal(render("> quoted\n> text"), "<blockquote><p>quoted\ntext</p></blockquote>");
   assert.equal(inline("[docs](mcp.md) and https://x.example/a."), '<a href="mcp.md">docs</a> and <a href="https://x.example/a">https://x.example/a</a>.');
-  assert.equal(inline("**https://ihsg.midoriresearch.com/terminal**"), '<strong><a href="https://ihsg.midoriresearch.com/terminal">https://ihsg.midoriresearch.com/terminal</a></strong>');
+  assert.equal(inline("**https://sahm.sahm-web.workers.dev/terminal**"), '<strong><a href="https://sahm.sahm-web.workers.dev/terminal">https://sahm.sahm-web.workers.dev/terminal</a></strong>');
   assert.equal(inline("(see https://x.example/a_(b))"), '(see <a href="https://x.example/a_(b)">https://x.example/a_(b)</a>)');
   assert.equal(render('<p align="center">\n  <img src="x.png">\n</p>\n\ntext'), "<p>text</p>");
 });

@@ -1,16 +1,18 @@
-name = "idx-web"
+# Sahm: saham syariah Indonesia, built on idx (github.com/fzn0x/idx, MIT).
+name = "sahm"
 main = "src/worker.js"
 compatibility_date = "2026-10-01"
-account_id = "dc0fe1ceb2528b6e2318010e82a9505a"
+# account_id: wrangler asks for it on the first deploy (or set
+# CLOUDFLARE_ACCOUNT_ID); it is the deployer's own Cloudflare account.
 
-# Only answer on the custom domain: no *.workers.dev URL, no preview URLs.
-# The Worker also rejects any other Host header (see src/worker.js).
-workers_dev = false
+# Served on sahm.<subdomain>.workers.dev until a custom domain is attached.
+# PUBLIC_HOST below must be that host name: the Worker answers 404 on any
+# other (see src/worker.js). Move every file to the real host with
+#   node web/scripts/set-host.mjs sahm.<subdomain>.workers.dev
+# For a custom domain later: workers_dev = false, a routes entry with
+# custom_domain = true, and set-host.mjs again.
+workers_dev = true
 preview_urls = false
-
-routes = [
-  { pattern = "ihsg.midoriresearch.com", custom_domain = true },
-]
 
 [assets]
 directory = "public"
@@ -29,7 +31,7 @@ command = "node scripts/docs.mjs"
 watch_dir = ["scripts", "../docs"]
 
 [vars]
-PUBLIC_HOST = "ihsg.midoriresearch.com"
+PUBLIC_HOST = "sahm.sahm-web.workers.dev"
 # KSEI register mirror published by .github/workflows/ownership.yml.
 OWN_MIRROR_URL = "https://github.com/fzn0x/idx/releases/download/ownership-data"
 OWN_KEEP_RELEASES = "6"
@@ -37,10 +39,12 @@ OWN_KEEP_RELEASES = "6"
 # loaded, and ~43k to replace a month D1 already holds (the delete counts too).
 OWN_DAILY_WRITE_BUDGET = "60000"
 
+# Create it once with `npx wrangler d1 create sahm`, paste the id it prints
+# here, then `npx wrangler d1 migrations apply sahm --remote`.
 [[d1_databases]]
 binding = "DB"
-database_name = "idx"
-database_id = "f9359e42-2661-4757-b55b-1e8c19e7180f"
+database_name = "sahm"
+database_id = "a49e3536-5efe-4898-bdb7-49d77c593c82"
 migrations_dir = "migrations"
 
 # Snapshot refresh. The handler itself decides how much to do: every minute

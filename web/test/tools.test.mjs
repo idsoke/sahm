@@ -46,32 +46,20 @@ test("only the idx.co.id, KSEI composition, local-database, Stockbit and uncheck
   assert.ok(names.has("tools") && names.has("list") && names.has("members"));
 });
 
-test("the landing page lists every tool with its commands", () => {
-  const html = read("web", "public", "index.html");
-  const start = html.indexOf('aria-labelledby="cmd-h"');
-  assert.ok(start > 0, "the Daftar Perintah section exists");
-  const section = html.slice(start, html.indexOf("</section>", start));
-  const rows = [...section.matchAll(/<tr><td>(idx_[a-z_]+)<\/td><td><code>([^<]+)<\/code><\/td><td>(.*?)<\/td>/g)];
-  assert.deepEqual(rows.map((r) => r[1]), TOOLS.map((t) => t.tool));
-  const unescape = (s) => s.replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-  for (const [, tool, cli, web] of rows) {
-    const t = byName(tool);
-    assert.equal(unescape(cli), t.cli, tool);
-    if (t.web) assert.ok(web.includes(`href="/terminal?cmd=${encodeURIComponent(t.web)}"`), tool);
-    else assert.match(web, /hanya CLI dan MCP/, tool);
+test("the landing pages point at the syariah commands, which exist in the terminal, in their own language", () => {
+  const names = new Set([...read("web", "public", "terminal.js").matchAll(/\{ name: "([a-z]+)", usage:/g)].map((m) => m[1]));
+  for (const [page, prefix] of [[["web", "public", "index.html"], "/terminal?cmd="], [["web", "public", "en", "index.html"], "/en/terminal?cmd="]]) {
+    const html = read(...page);
+    const cmds = [...html.matchAll(/href="(\/(?:en\/)?terminal\?cmd=)([^"]+)"/g)];
+    assert.ok(cmds.length >= 5, page.join("/"));
+    for (const [, at, cmd] of cmds) {
+      assert.equal(at, prefix, `${page.join("/")}: ${cmd} opens the terminal in the page's language`);
+      assert.ok(names.has(decodeURIComponent(cmd).split(" ")[0]), `${page.join("/")}: ${cmd}`);
+    }
+    assert.ok(cmds.some(([, , c]) => c === "syariah"), "links the DES list");
+    assert.ok(cmds.some(([, , c]) => decodeURIComponent(c) === "screen --preset syariah"), "links the sharia screener");
+    assert.match(html, /github\.com\/fzn0x\/idx/, "credits idx");
   }
-  assert.match(html, /idx mcp · 47 alat/);
-  // The English page carries the same rows, linking to the English terminal.
-  const en = read("web", "public", "en", "index.html");
-  const enStart = en.indexOf('aria-labelledby="cmd-h"');
-  const enRows = [...en.slice(enStart, en.indexOf("</section>", enStart)).matchAll(/<tr><td>(idx_[a-z_]+)<\/td><td><code>([^<]+)<\/code><\/td><td>(.*?)<\/td>/g)];
-  assert.deepEqual(enRows.map((r) => r[1]), TOOLS.map((t) => t.tool));
-  for (const [, tool, , web] of enRows) {
-    const t = byName(tool);
-    if (t.web) assert.ok(web.includes(`href="/en/terminal?cmd=${encodeURIComponent(t.web)}"`), tool);
-    else assert.match(web, /CLI and MCP only/, tool);
-  }
-  assert.match(en, /idx mcp · 47 tools/);
 });
 
 test("/api/instruments and /api/members serve the bundled lists", () => {

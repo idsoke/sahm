@@ -2,7 +2,7 @@
 // its move, breadth and the session; the heavyweights and the most active
 // stocks follow; a figure that changed in the minute refresh is marked with
 // fresh ink. Every word and number follows the page's language (i18n.js).
-import { api, fmt, NA, el, flip, setLive, copyButton, loadUniverse, quoteHref, shortName, signClass, scrollCue, TICKER } from "/app.js";
+import { api, fmt, NA, el, flip, setLive, loadUniverse, quoteHref, shortName, signClass, TICKER } from "/app.js";
 import { TOOLS } from "/tools.js";
 import { session, wib, TIMETABLE } from "/clock.js";
 import { niceTicks } from "/chart.js";
@@ -272,19 +272,38 @@ function renderLead(m) {
   setLive($("adv"), fmt.int(m.advancing));
   setLive($("dec"), fmt.int(m.declining));
   setLive($("unch"), fmt.int(m.unchanged));
-  $("brd-q").textContent = t(`${fmt.int(m.quoted)} dari ${fmt.int(m.universe)} saham tercatat memiliki harga`, `${fmt.int(m.quoted)} of ${fmt.int(m.universe)} listed stocks quoted`);
+  $("brd-q").textContent = t(`${fmt.int(m.quoted)} dari ${fmt.int(m.universe)} saham syariah di papan memiliki harga`, `${fmt.int(m.quoted)} of ${fmt.int(m.universe)} sharia stocks on the board quoted`);
   const prevClose = ix && ix.price != null && ix.change != null ? ix.price - ix.change : null;
   setTape(sessionPoints(m.index_tape || [], m.as_of, prevClose), prevClose);
+}
+
+/** The DES a market envelope was counted against, in words: "DES OJK KEP-21/D.04/2026". */
+function desName(m, lang) {
+  const d = m.syariah_list;
+  if (!d) return lang === "id" ? "Daftar Efek Syariah OJK" : "OJK's Daftar Efek Syariah";
+  return lang === "id" ? `Daftar Efek Syariah OJK ${d.decree}` : `OJK's Daftar Efek Syariah ${d.decree}`;
+}
+
+/** The DES block names the decree the API counts against, so it never lags the bundled list. */
+function renderDes(d) {
+  if (!d) return;
+  const [y, half] = d.period.split("-");
+  const set = (id, text) => { const n = $(id); if (n) n.textContent = text; };
+  set("des-period", t(`Periode ${half} ${y}`, `Period ${half} ${y}`));
+  set("des-decree", d.decree);
+  set("des-effective", longDate(d.effective).replace(/^[^,]+, /, ""));
+  set("des-count", t(`${fmt.int(d.count)} saham`, `${fmt.int(d.count)} stocks`));
 }
 
 function render(envl) {
   const m = envl.data;
   renderLead(m);
+  renderDes(m.syariah_list);
   liveRows($("board-rows"), BOARD, m.heavyweights);
   for (const [id, spec] of Object.entries(MOVERS)) liveRows(moverTable(id, spec), spec.cols, spec.rows(m));
   $("board-m").textContent = t(
-    `Sumber: ${envl.provider === "yahoo" ? "Yahoo Finance" : envl.provider} lewat snapshot menit idx, ${fmt.when(m.refreshed_at)}${envl.stale ? ", tertunda" : ""}. Pilih kode saham untuk harga dan grafiknya.`,
-    `Source: ${envl.provider === "yahoo" ? "Yahoo Finance" : envl.provider} through the idx minute snapshot, ${fmt.when(m.refreshed_at)}${envl.stale ? ", stale" : ""}. Choose a code for its price and chart.`);
+    `Sumber: ${envl.provider === "yahoo" ? "Yahoo Finance" : envl.provider} lewat snapshot menit Sahm, ${fmt.when(m.refreshed_at)}${envl.stale ? ", tertunda" : ""}; status syariah dari ${desName(m, "id")}. Pilih kode saham untuk harga dan grafiknya.`,
+    `Source: ${envl.provider === "yahoo" ? "Yahoo Finance" : envl.provider} through the Sahm minute snapshot, ${fmt.when(m.refreshed_at)}${envl.stale ? ", stale" : ""}; sharia status from ${desName(m, "en")}. Choose a code for its price and chart.`);
 }
 
 // ---- the session and the freshness line ------------------------------------------
@@ -358,7 +377,7 @@ function tick() {
 async function refresh() {
   nextRefresh = Date.now() + REFRESH_MS;
   try {
-    const envl = await api("market");
+    const envl = await api("market?syariah=1");
     market = envl;
     failed = null;
     refreshedAt = new Date(envl.data.refreshed_at);
@@ -367,7 +386,7 @@ async function refresh() {
   } catch (e) {
     failed = e;
     if (!market) {
-      $("board-rows").replaceChildren(el("tr", {}, [el("td", { class: "l dn", colspan: "7", text: t(`Papan harga tidak tersedia: ${e.message}. CLI membaca sumber yang sama: idx market overview`, `The board is unavailable: ${e.message}. The CLI reads the same sources: idx market overview`) })]));
+      $("board-rows").replaceChildren(el("tr", {}, [el("td", { class: "l dn", colspan: "7", text: t(`Papan harga tidak tersedia: ${e.message}. Coba lagi sebentar lagi.`, `The board is unavailable: ${e.message}. Try again shortly.`) })]));
       $("ix-asof").textContent = t("Data tidak tersedia", "Data unavailable");
     }
   }
@@ -449,21 +468,9 @@ hotkeys({ "/": () => $("cmd").focus(), p: () => togglePause() });
 onPause((p) => { if (!p) refresh(); status(new Date(), session(new Date(), holidays)); });
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !isPaused()) refresh(); });
 
-$("copy-install").replaceWith(copyButton($("install-line").textContent));
-$("copy-mcp").replaceWith(copyButton($("mcp-line").textContent));
 $("today").textContent = longDate(wib(new Date()).iso).replace(/^[^,]+, /, "");
 
 tabs();
 search();
-for (const w of document.querySelectorAll("#perintah .tbl-wrap")) scrollCue(w);
-// On a phone the command table restacks its rows as blocks; explicit roles keep it a table to assistive technology.
-const toolsTable = document.querySelector("#perintah table");
-if (toolsTable) {
-  toolsTable.setAttribute("role", "table");
-  for (const gr of toolsTable.querySelectorAll("thead, tbody")) gr.setAttribute("role", "rowgroup");
-  for (const tr of toolsTable.rows) tr.setAttribute("role", "row");
-  for (const th of toolsTable.querySelectorAll("th")) th.setAttribute("role", "columnheader");
-  for (const td of toolsTable.querySelectorAll("td")) td.setAttribute("role", "cell");
-}
 loadHolidays();
 tick();

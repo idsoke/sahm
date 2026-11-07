@@ -1,7 +1,7 @@
 {
-  "name": "idx-web",
+  "name": "sahm-web",
   "private": true,
-  "description": "ihsg.midoriresearch.com: landing page, hosted terminal and docs for idx",
+  "description": "Sahm: Indonesian sharia stocks web app (landing page, terminal, API) on Cloudflare Workers, built on idx (github.com/fzn0x/idx)",
   "scripts": {
     "docs": "node scripts/docs.mjs",
     "dev": "wrangler dev",
