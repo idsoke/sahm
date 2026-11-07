@@ -69,7 +69,7 @@ test("links: pages stay on the site, other files go to GitHub, odd schemes are d
 
 test("every docs/*.md file is a page, and every page renders", () => {
   const docs = readdirSync(join(ROOT, "docs")).filter((f) => f.endsWith(".md")).map((f) => `docs/${f}`);
-  const listed = PAGES.map((p) => p.src).filter((s) => s !== "README.md");
+  const listed = PAGES.map((p) => p.src).filter((s) => s !== "IDX-README.md");
   for (const d of docs) assert.ok(listed.includes(d), `${d} is not on the site: add it to PAGES in web/scripts/docs.mjs`);
   for (const s of listed) assert.ok(docs.includes(s), `${s} is in PAGES but does not exist`);
   assert.equal(new Set(PAGES.map((p) => p.slug)).size, PAGES.length, "slugs are unique");

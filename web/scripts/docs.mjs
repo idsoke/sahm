@@ -25,7 +25,7 @@ import { fileURLToPath } from "node:url";
 import { dropHtmlBlocks, escapeHtml, inlineText, render, slugger } from "./md.mjs";
 
 export const ORIGIN = "https://sahm.sahm-web.workers.dev";
-export const REPO = "https://github.com/fzn0x/idx";
+export const REPO = "https://github.com/idsoke/sahm";
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 /** Every page, in navigation and llms.txt order. Titles come from each file's
@@ -34,7 +34,7 @@ export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..")
  *  say what a page answers; no counts, they would go stale.
  *  A new docs/*.md file must be added here (docs.test.mjs fails otherwise). */
 export const PAGES = [
-  { slug: "index", src: "README.md", title: "idx", nav: "Overview", panel: "Ikhtisar", desc: "What idx is, how to install it, every command, output for scripts, the MCP server in brief, bandarmology and the data sources." },
+  { slug: "index", src: "IDX-README.md", title: "idx", nav: "Overview", panel: "Ikhtisar", desc: "What idx is, how to install it, every command, output for scripts, the MCP server in brief, bandarmology and the data sources." },
   { slug: "agent-guide", src: "docs/agent-guide.md", nav: "For agents", panel: "Panduan agen", desc: "How an AI agent should call idx (MCP or the CLI), the JSON contract and exit codes in one place, recipes, and an agent-led install." },
   { slug: "mcp", src: "docs/mcp.md", nav: "MCP server", panel: "Server MCP", desc: "Registering idx with each agent, idx mcp setup, the HTTP transport, and every MCP tool with its arguments." },
   { slug: "json-output", src: "docs/json-output.md", nav: "JSON output", panel: "Keluaran JSON", desc: "The envelope, every payload schema field by field, errors, exit codes and the compatibility promise." },
@@ -96,7 +96,9 @@ export function resolveHref(url, page, mode) {
   const [path, hash] = url.split("#");
   const anchor = hash ? `#${hash}` : "";
   const resolved = posix.normalize(posix.join(posix.dirname(page.src), path));
-  const target = PAGES.find((p) => p.src === resolved);
+  // docs/*.md link the idx overview as ../README.md; in Sahm that file is IDX-README.md
+  // (README.md is Sahm's own front page), so both names open the overview.
+  const target = PAGES.find((p) => p.src === (resolved === "README.md" ? "IDX-README.md" : resolved));
   if (target) return mode === "html" ? `${htmlPath(target.slug)}${anchor}` : `${ORIGIN}${mdPath(target.slug)}${anchor}`;
   return `${REPO}/blob/main/${resolved}${anchor}`;
 }
@@ -148,7 +150,7 @@ function stripReadmeHeader(md) {
 export function pageMarkdown(page, root = ROOT) {
   let clean = read(root, page.src);
   let title = page.title;
-  if (page.src === "README.md") {
+  if (page.src === "IDX-README.md") {
     const { lead, rest } = stripReadmeHeader(clean);
     clean = `# ${title}\n\n${lead ? `> ${lead}\n\n` : ""}${dropHtmlBlocks(rest.trimStart())}`;
   } else {
@@ -262,7 +264,7 @@ ${body}
   <div class="wrap">
     <p class="place">Jakarta. Sahm · <a href="/license.txt">Licence</a></p>
     <p class="links"><a href="/en/">Market page</a> <a href="/en/terminal">Web terminal</a> <a href="/" hreflang="id" lang="id">Halaman pasar (Bahasa Indonesia)</a> <a href="${REPO}">Source on GitHub</a> <a href="${REPO}/blob/main/CHANGELOG.md">Changelog</a></p>
-    <p class="disc">These pages document idx, the open-source toolkit Sahm is built on, and are generated from its README.md and docs/. The CLI, MCP server and JSON contract they describe are idx's; Sahm adds the sharia list and screener on top. idx and Sahm are research tooling, not investment advice, and is not affiliated with PT Bursa Efek Indonesia (IDX), KSEI, Yahoo, Microsoft or Stockbit.</p>
+    <p class="disc">These pages document idx, the open-source toolkit Sahm is built on, and are generated from its README (IDX-README.md) and docs/. The CLI, MCP server and JSON contract they describe are idx's; Sahm adds the sharia list and screener on top. idx and Sahm are research tooling, not investment advice, and is not affiliated with PT Bursa Efek Indonesia (IDX), KSEI, Yahoo, Microsoft or Stockbit.</p>
   </div>
 </footer>
 </body>
@@ -292,7 +294,7 @@ export function llmsTxt(root = ROOT) {
 }
 
 export function llmsFullTxt(root = ROOT) {
-  const parts = [`# idx documentation\n\n> ${SUMMARY}\n\nVersion ${version(root)}. Generated from README.md and docs/*.md of ${REPO}.\n`];
+  const parts = [`# idx documentation\n\n> ${SUMMARY}\n\nVersion ${version(root)}. Generated from IDX-README.md and docs/*.md of ${REPO}.\n`];
   for (const p of PAGES) parts.push(`---\nSource: ${ORIGIN}${mdPath(p.slug)}\n\n${pageMarkdown(p, root).md}`);
   return parts.join("\n");
 }
